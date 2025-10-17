@@ -1,9 +1,13 @@
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 import javax.servlet.http.*;
 import java.util.Date;
 
 @WebListener
-public class UserActivityListener implements HttpSessionListener, HttpSessionAttributeListener {
+public class UserActivityListener implements HttpSessionListener, HttpSessionAttributeListener, ServletContextListener {
+    private  FileLogger fileLogger;
+
     @Override
     public void attributeAdded(HttpSessionBindingEvent se) {
         String name = se.getName();
@@ -11,9 +15,9 @@ public class UserActivityListener implements HttpSessionListener, HttpSessionAtt
         Date date = new Date();
 
         if ("username".equals(name)) {
-            System.out.println("----------------------------------------");
-            System.out.println("Пользователь вошел в систему: " + date);
-            System.out.println("Имя пользователя: " + value);
+            fileLogger.log("----------------------------------------");
+            fileLogger.log("Пользователь вошел в систему: " + date);
+            fileLogger.log("Имя пользователя: " + value);
         }
     }
 
@@ -24,9 +28,9 @@ public class UserActivityListener implements HttpSessionListener, HttpSessionAtt
         Date date = new Date();
 
         if ("username".equals(name)) {
-            System.out.println("----------------------------------------");
-            System.out.println("Пользователь вышел из системы: " + date);
-            System.out.println("Имя пользователя: " + value);
+            fileLogger.log("----------------------------------------");
+            fileLogger.log("Пользователь вышел из системы: " + date);
+            fileLogger.log("Имя пользователя: " + value);
         }
     }
 
@@ -39,15 +43,35 @@ public class UserActivityListener implements HttpSessionListener, HttpSessionAtt
     public void sessionCreated(HttpSessionEvent se) {
         Date date = new Date();
 
-        System.out.println("----------------------------------------");
-        System.out.println("Сессия создана: " + date);
+        fileLogger.log("----------------------------------------");
+        fileLogger.log("Сессия создана: " + date);
     }
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
         Date date = new Date();
 
-        System.out.println("----------------------------------------");
-        System.out.println("Сессия уничтожена: " + date);
+        fileLogger.log("----------------------------------------");
+        fileLogger.log("Сессия уничтожена: " + date);
+    }
+
+    @Override
+    public void contextInitialized(ServletContextEvent servletContextEvent) {
+        try {
+            fileLogger = new FileLogger();
+        } catch (Exception e) {
+            System.err.println("Ошибка при инициализации fileLogger: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        if (fileLogger != null) {
+            try {
+                fileLogger.close();
+            } catch (Exception e) {
+                System.err.println("Ошибка при закрытии fileLogger: " + e.getMessage());
+            }
+        }
     }
 }

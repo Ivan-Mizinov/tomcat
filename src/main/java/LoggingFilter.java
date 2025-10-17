@@ -6,10 +6,16 @@ import java.util.Date;
 
 @WebFilter("/*")
 public class LoggingFilter implements Filter {
+    private FileLogger fileLogger;
 
     @Override
     public void init(FilterConfig filterConfig) {
         System.out.println(("LoggingFilter initialized"));
+        try {
+            fileLogger = new FileLogger();
+        } catch (Exception e) {
+            System.err.println("Ошибка при инициализации FileLogger: " + e.getMessage());
+        }
     }
 
     @Override
@@ -20,10 +26,10 @@ public class LoggingFilter implements Filter {
         String remoteAddr = request.getRemoteAddr();
         Date date = new Date();
 
-        System.out.println("----------------------------------------");
-        System.out.println("Время запроса: " + date);
-        System.out.println("URL: " + uri);
-        System.out.println("IP-адрес: " + remoteAddr);
+        fileLogger.log("----------------------------------------");
+        fileLogger.log("Время запроса: " + date);
+        fileLogger.log("URL: " + uri);
+        fileLogger.log("IP-адрес: " + remoteAddr);
 
         chain.doFilter(request, response);
     }
@@ -31,5 +37,6 @@ public class LoggingFilter implements Filter {
     @Override
     public void destroy() {
         System.out.println("LoggingFilter destroyed");
+        fileLogger.close();
     }
 }
