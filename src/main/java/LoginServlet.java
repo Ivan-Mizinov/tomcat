@@ -33,6 +33,7 @@ public class LoginServlet extends HttpServlet {
         if (users.containsKey(username) && users.get(username).equals(password)) {
             HttpSession session = request.getSession();
             session.setAttribute("username", username);
+            session.setAttribute("password", password);
 
             Cookie userCookie = new Cookie("username", username);
             response.addCookie(userCookie);
